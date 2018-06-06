@@ -3,12 +3,20 @@ require_once '../vendor/autoload.php';
 
 //Load Twig templating environment
 $loader = new Twig_Loader_Filesystem('../templates/');
-$twig = new Twig_Environment($loader, ['debug' => true]);
+$twig 	= new Twig_Environment($loader, ['debug' => true]);
+$datas 	= [];
 
 //Get the episodes from the API
-$client = new GuzzleHttp\Client();
-$res = $client->request('GET', 'http://3ev.org/dev-test-api/');
-$data = json_decode($res->getBody(), true);
+try {
+
+	$client = new GuzzleHttp\Client();
+	$res 	= $client->request('GET', 'http://3ev.org/dev-test-api/');
+	$data 	= json_decode($res->getBody(), true);
+
+} catch (GuzzleHttp\Exception\ServerException $e) {
+	$datas["status"] = "error";
+}
+
 
 
 function sortBySeasonAndEpisode($a,$b){
@@ -29,6 +37,13 @@ function printMovies($movies) {
 	exit;
 }
 
-usort($data, "sortBySeasonAndEpisode");
+if(isset($data)) {
+	$datas["episodes"] = $data;
+	usort($data, "sortBySeasonAndEpisode");
+}
+
+
+
+
 //Render the template
-echo $twig->render('page.html', ["episodes" => $data]);
+echo $twig->render('page.html', $datas);
