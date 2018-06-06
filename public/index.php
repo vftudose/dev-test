@@ -10,8 +10,25 @@ $client = new GuzzleHttp\Client();
 $res = $client->request('GET', 'http://3ev.org/dev-test-api/');
 $data = json_decode($res->getBody(), true);
 
-//Sort the episodes
-array_multisort(array_keys($data), SORT_ASC, SORT_STRING, $data);
 
+function sortBySeasonAndEpisode($a,$b){
+
+	if($a['season'] == $b["season"]) {
+		return $a['episode'] > $b['episode'];
+	}
+
+	return $a["season"] > $b["season"];
+}
+
+
+function printMovies($movies) {
+	echo "<pre>";
+	foreach ($movies as $movie) {
+		print_r($movie["season"] . "\n");
+	}
+	exit;
+}
+
+usort($data, "sortBySeasonAndEpisode");
 //Render the template
 echo $twig->render('page.html', ["episodes" => $data]);
